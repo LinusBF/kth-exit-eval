@@ -80,7 +80,7 @@ app.get('/add_director', (req, res) => {
 
 //Adds a director to the database
 app.post('/add_director', (req, res) => {
-	var user_mail = req.body.mail;
+	var user_mail = req.body.mail + "@kth.se";
 	
 	//TODO: get ldap name
 	var user_fname = 'Test';
@@ -132,7 +132,7 @@ app.get('/add_examiner', (req, res) => {
 
 //Adds an examiner to the database
 app.post('/add_examiner', (req, res) => {
-	var user_mail = req.body.mail;
+	var user_mail = req.body.mail + "@kth.se";
 	
 	//TODO: logged in user, ldap
 	var director_mail = "test_dir@kth.se";
