@@ -12,11 +12,11 @@
 //Setting up database connection:
 const Pool = require('pg').Pool;
 const pool = new Pool({
-	user : 'pi',
+	user : 'test',
 	host : 'localhost',
 	database : 'exitjs',
 	password : 'exitjs567',
-	port : 5432,		
+	port : 5432,
 });
 
 //Gets all directors
@@ -264,6 +264,7 @@ const add_budget_year = (req, res, mail, budget_year) => {
 	
 	pool.query(post, (err, result) => {
 		if(err){
+			console.error(err);
 			res.send("An error occurred when attempting to add to the database");
 			return;
 		}
@@ -464,13 +465,14 @@ const update_remaining_hours = (examiner_mail, credits, year, num_students) => {
 					throw err3;
 					return;
 				}
+				console.log(result3);
 				var minus;
 				if(credits === 15) {
 					minus = result3.rows[0].bachelor_hours;
 				} else {
 					minus = result3.rows[0].master_hours;
 				}
-				
+
 				if(num_students == 2){
 					minus = minus * result3.rows[0].factor_two;
 				} else if(num_students == 3){
@@ -494,11 +496,15 @@ const update_remaining_hours = (examiner_mail, credits, year, num_students) => {
 				remaining_hours = remaining_hours - minus;
 				
 				var post = "UPDATE EXAMINER_WORK_YEAR SET remaining_tutoring_hours = " + remaining_hours + " WHERE examiner_mail = '" + examiner_mail + "' AND budget_year = " + year;
+				console.log(post);
 				pool.query(post, (err4, result4) => {
 					if(err4){
+						console.error(err4);
+						console.error(result4);
 						throw err4;
 						return;
 					}
+					console.log(result4);
 					console.log("updated remaining tutoring hours");
 				});
 			});
