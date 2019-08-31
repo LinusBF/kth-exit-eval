@@ -465,7 +465,7 @@ const update_remaining_hours = (examiner_mail, credits, year, num_students) => {
 					return;
 				}
 				var minus;
-				if(credits = 15) {
+				if(credits === 15) {
 					minus = result3.rows[0].bachelor_hours;
 				} else {
 					minus = result3.rows[0].master_hours;
