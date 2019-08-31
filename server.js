@@ -1,11 +1,15 @@
 /*
+
+
 	The server logic for the project is contained in this file. All get/post requests are handled here.
 	Searching "TODO:" in this document will point you to the not yet implemented features of the project.
-
+	
 	TODO:
 		Permissions, which require CAS to let us be a not Unathorized Web Service.
 		All post-requests, which also either require CAS to know which user is adding data to database,
 		or LDAP for certain additions (i.e. add_examiner), or both.
+
+
 */
 
 //Exporting libraries
@@ -27,6 +31,7 @@ const app = express();
 app.use(express.urlencoded());
 app.use(express.json());
 
+/*
 //Setting up SSL keys (HTTPS-server):
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/www.exitjs.cf/privkey.pem', 'utf8');
 const certificate = fs.readFileSync('/etc/letsencrypt/live/www.exitjs.cf/cert.pem', 'utf8');
@@ -36,6 +41,7 @@ const credentials = {
 	cert: certificate,
 	ca: ca
 };
+*/
 
 
 //Fixing get-requests for all page views/pages, and post requests that will be added to the database
@@ -48,7 +54,7 @@ app.get('/exitjs', (req, res) => {
 app.get('/', (req, res) => {
 	var home = fs.readFileSync('views/home.html');
 	if(req.user != null){
-		console.log("huh");
+		console.log("huh");	
 	}
 	var menu = main_menu.create_main_menu(req);
 	res.send(header + menu + home + footer);
@@ -75,11 +81,11 @@ app.get('/add_director', (req, res) => {
 //Adds a director to the database
 app.post('/add_director', (req, res) => {
 	var user_mail = req.body.mail;
-
+	
 	//TODO: get ldap name
 	var user_fname = 'Test';
 	var user_lname = 'Add';
-
+	
 	db.add_director(req, res, user_mail, user_fname, user_lname);
 });
 
@@ -93,7 +99,7 @@ app.get('/add_budget_year', (req, res) => {
 //Adds a budget year to the database
 app.post('/add_budget_year', (req, res) => {
 	var budget_year = req.body;
-
+	
 	//TODO: logged in user instead of this:
 	var director_mail = 'test_dir@kth.se';
 	db.add_budget_year(req, res, director_mail, budget_year);
@@ -110,10 +116,10 @@ app.get('/add_degree_project', (req, res) => {
 //and adds the company + students to the database
 app.post('/add_degree_project', (req, res) => {
 	var post_info = req.body;
-
+	
 	//TODO: logged in user instead of this:
 	var examiner_mail = "test_exam3@kth.se";
-
+	
 	db.add_degree_project(req, res, examiner_mail, post_info);
 });
 
@@ -127,12 +133,12 @@ app.get('/add_examiner', (req, res) => {
 //Adds an examiner to the database
 app.post('/add_examiner', (req, res) => {
 	var user_mail = req.body.mail;
-
+	
 	//TODO: logged in user, ldap
 	var director_mail = "test_dir@kth.se";
 	var user_fname = "Test";
 	var user_lname = "Add";
-
+	
 	db.add_examiner(req, res, director_mail, user_mail, user_fname, user_lname);
 });
 
@@ -158,7 +164,7 @@ app.get('/available_examiners', (req, res) => {
 app.get('/budget_years', (req, res) => {
 	//TODO: cas/username to get director mail
 	var director_mail = 'test_dir@kth.se';
-
+	
 	var budget_years = fs.readFileSync('views/budget_years.html');
 	var menu = main_menu.create_main_menu(req);
 	parse_data.budget_years(director_mail, (info) => {
@@ -177,11 +183,11 @@ app.get('/examiners', (req, res) => {
 app.post('/examiners', (req, res) => {
 	//TODO: cas/username to get director mail
 	var director_mail = 'test_dir@kth.se';
-
+	
 	var budget_year = req.body.budget_year;
 	var examiners = fs.readFileSync('views/examiners.html');
-
-
+	
+	
 	var menu = main_menu.create_main_menu(req);
 	parse_data.examiners(director_mail, budget_year, (info) => {
 		res.send(header + menu + examiners + info + footer);
@@ -192,7 +198,7 @@ app.post('/examiners', (req, res) => {
 app.get('/degree_projects', (req, res) => {
 	//TODO: cas/username to get director mail
 	var examiner_mail = 'test_exam3@kth.se';
-
+	
 	var degree_project = fs.readFileSync('views/degree_project.html');
 	var menu = main_menu.create_main_menu(req);
 	parse_data.degree_projects(examiner_mail, (info) => {
@@ -221,7 +227,7 @@ app.get('/profile', (req, res) => {
 	var examiner_mail = 'test_exam3@kth.se';
 	var profile = fs.readFileSync('views/profile.html');
 	var menu = main_menu.create_main_menu(req);
-
+	
 	parse_data.profile(examiner_mail, (info) => {
 		res.send(header + menu + profile + info + footer);
 	});
@@ -234,24 +240,24 @@ app.post('/update_area', (req, res) => {
 
 	var menu = main_menu.create_main_menu(req);
 	var updated = fs.readFileSync('views/success.html');
-
+	
 	console.log("Update area: " + req.body.area);
 	db.update_area(examiner_mail, req.body.area, (success) => {
 		if(success){
 			res.send(header + menu + updated + footer);
 		} else {
-			res.send('Error when updating area');
+			res.send('Error when updating area');		
 		}
 	});
 });
 
-//Gets view, creates main menu, gets the specified tutoring hours for examiners via parse_data and sends it back to the user.
+//Gets view, creates main menu, gets the specified tutoring hours for examiners via parse_data and sends it back to the user. 
 app.get('/specify_tutoring_hours', (req, res) => {
 	//TODO: cas/username to get examiner mail
 	var director_mail = 'test_dir@kth.se';
 	var profile = fs.readFileSync('views/specify_tutoring_hours.html');
 	var menu = main_menu.create_main_menu(req);
-
+	
 	parse_data.specify_tutoring_hours(director_mail, (info) => {
 		res.send(header + menu + profile + info + footer);
 	});
@@ -262,48 +268,55 @@ app.post('/specify_tutoring_hours', (req, res) => {
 	//TODO: cas/username to get examiner mail
 	var director_mail = 'test_dir@kth.se';
 	var post_info = req.body;
-
+	
 	db.specify_tutoring_hours(req, res, director_mail, post_info);
 });
 
 
 
 //Fixing get requests for css files and images
+const root_path = "D:\\Dropbox\\KTH\\Vidareutveckling av mjukvara\\exit_nodejs-master";
 app.get('/styles/form.css', (req, res) => {
-	res.sendFile('/home/pi/KTH/exit_nodejs/styles/form.css');
+	res.sendFile('styles/form.css', {root: root_path});
 });
 
 app.get('/styles/main.css', (req, res) => {
-	res.sendFile('/home/pi/KTH/exit_nodejs/styles/main.css');
+	res.sendFile('styles/main.css', {root: root_path});
 });
 
 app.get('/styles/print.css', (req, res) => {
-	res.sendFile('/home/pi/KTH/exit_nodejs/styles/print.css');
+	res.sendFile('styles/print.css', {root: root_path});
 });
 
 app.get('/styles/screen.css', (req, res) => {
-	res.sendFile('/home/pi/KTH/exit_nodejs/styles/screen.css');
+	res.sendFile('styles/screen.css', {root: root_path});
 });
 
 app.get('/images/kthexit.png', (req, res) => {
-	res.sendFile('/home/pi/KTH/exit_nodejs/images/kthexit.png');
+	res.sendFile('images/kthexit.png', {root: root_path});
 });
 
 app.get('/images/kth.png', (req, res) => {
-	res.sendFile('/home/pi/KTH/exit_nodejs/images/kth.png');
+	res.sendFile('images/kth.png', {root: root_path});
 });
 
-
+/*
 //Listen to 443 for https server and redirecting http requests to https.
 const httpsServer= https.createServer(credentials, app);
 
 httpsServer.listen(443, () => {
 	console.log('HTTPS Server running');
 });
-
+*/
+/*
 //http (port 80) only redirects to https server (port 443)
 const http = require('http');
 http.createServer(function (req, res) {
 	res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
 	res.end();
 }).listen(80);
+
+ */
+
+const port = 8080;
+app.listen(port, () => console.log(`App listening on port ${port}!`));
