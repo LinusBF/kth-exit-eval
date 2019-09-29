@@ -17,10 +17,10 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const express = require('express');
+const session = require('express-session');
 const db = require('./postgres');
 const main_menu = require('./main_menu');
 const parse_data = require('./parse_data');
-
 
 //Header and footer files that are used to send back html pages.
 var header = fs.readFileSync('views/header.html');
@@ -28,8 +28,25 @@ var footer = fs.readFileSync('views/footer.html');
 
 //Setting up the server to be able to receive post-requests properly
 const app = express();
+const sess = session({
+	secret: "SoVerySecret",
+	cookie: {
+		maxAge: 3600000
+	},
+	resave: true
+});
+
 app.use(express.urlencoded());
 app.use(express.json());
+app.use(sess);
+
+app.use((req, res, next) => {
+	if(req.session.user || req.path === "/login"){
+		next();
+	} else {
+		res.redirect('/login');
+	}
+});
 
 /*
 //Setting up SSL keys (HTTPS-server):
@@ -61,7 +78,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-	res.send('error');
+	res.send('To be created');
 });
 
 //Gets view, creates main menu and sends it back to the user.

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "express-session": "^1.16.2",
     "kth-node-configuration": "^1.6.4",
     "kth-node-ldap": "^2.3.8",
     "kth-node-log": "^3.0.2",
