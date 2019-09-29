@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node -r dotenv/config server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "ÖB+CS",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^8.1.0",
     "express": "^4.17.1",
     "express-session": "^1.16.2",
     "kth-node-configuration": "^1.6.4",

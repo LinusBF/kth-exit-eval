@@ -12,6 +12,11 @@
 
 */
 
+if(!process.env.MASTER_PASSWORD){
+	console.error("Master password not set!");
+	process.exit(1);
+}
+
 //Exporting libraries
 const fs = require('fs');
 const path = require('path');
@@ -41,7 +46,12 @@ app.use(express.json());
 app.use(sess);
 
 app.use((req, res, next) => {
-	if(req.session.user || req.path === "/login"){
+	if (req.path.startsWith("/styles") || req.path.startsWith("/images")){
+		next();
+	} else if(req.session.user){
+		console.log(`Logged in as ${req.session.user.role}`);
+		next();
+	} else if(req.path === "/login"){
 		next();
 	} else {
 		res.redirect('/login');
@@ -71,14 +81,32 @@ app.get('/exitjs', (req, res) => {
 app.get('/', (req, res) => {
 	var home = fs.readFileSync('views/home.html');
 	if(req.user != null){
-		console.log("huh");	
+		console.log("huh");
 	}
 	var menu = main_menu.create_main_menu(req);
 	res.send(header + menu + home + footer);
 });
 
 app.get('/login', (req, res) => {
-	res.send('To be created');
+	const loginForm = fs.readFileSync('views/login.html');
+	res.send(header + loginForm + footer);
+});
+
+app.post('/login', (req, res) => {
+	if(req.body.role === "student"){
+		req.session.user = {
+			role: "student"
+		};
+		res.redirect('/');
+	} else if (req.body.pass === process.env.MASTER_PASSWORD) {
+		req.session.user = {
+			role: req.body.role,
+			mail: req.body.director_user_name + "@kth.se"
+		};
+		res.redirect('/');
+	} else {
+		res.redirect('/login');
+	}
 });
 
 //Gets view, creates main menu and sends it back to the user.
@@ -98,11 +126,11 @@ app.get('/add_director', (req, res) => {
 //Adds a director to the database
 app.post('/add_director', (req, res) => {
 	var user_mail = req.body.mail + "@kth.se";
-	
+
 	//TODO: get ldap name
 	var user_fname = 'Test';
 	var user_lname = 'Add';
-	
+
 	db.add_director(req, res, user_mail, user_fname, user_lname);
 });
 
@@ -116,7 +144,7 @@ app.get('/add_budget_year', (req, res) => {
 //Adds a budget year to the database
 app.post('/add_budget_year', (req, res) => {
 	var budget_year = req.body;
-	
+
 	//TODO: logged in user instead of this:
 	var director_mail = 'test_dir@kth.se';
 	db.add_budget_year(req, res, director_mail, budget_year);
@@ -133,10 +161,10 @@ app.get('/add_degree_project', (req, res) => {
 //and adds the company + students to the database
 app.post('/add_degree_project', (req, res) => {
 	var post_info = req.body;
-	
+
 	//TODO: logged in user instead of this:
 	var examiner_mail = "test_exam3@kth.se";
-	
+
 	db.add_degree_project(req, res, examiner_mail, post_info);
 });
 
@@ -150,12 +178,12 @@ app.get('/add_examiner', (req, res) => {
 //Adds an examiner to the database
 app.post('/add_examiner', (req, res) => {
 	var user_mail = req.body.mail + "@kth.se";
-	
+
 	//TODO: logged in user, ldap
 	var director_mail = "test_dir@kth.se";
 	var user_fname = "Test";
 	var user_lname = "Add";
-	
+
 	db.add_examiner(req, res, director_mail, user_mail, user_fname, user_lname);
 });
 
@@ -181,7 +209,7 @@ app.get('/available_examiners', (req, res) => {
 app.get('/budget_years', (req, res) => {
 	//TODO: cas/username to get director mail
 	var director_mail = 'test_dir@kth.se';
-	
+
 	var budget_years = fs.readFileSync('views/budget_years.html');
 	var menu = main_menu.create_main_menu(req);
 	parse_data.budget_years(director_mail, (info) => {
@@ -200,11 +228,11 @@ app.get('/examiners', (req, res) => {
 app.post('/examiners', (req, res) => {
 	//TODO: cas/username to get director mail
 	var director_mail = 'test_dir@kth.se';
-	
+
 	var budget_year = req.body.budget_year;
 	var examiners = fs.readFileSync('views/examiners.html');
-	
-	
+
+
 	var menu = main_menu.create_main_menu(req);
 	parse_data.examiners(director_mail, budget_year, (info) => {
 		res.send(header + menu + examiners + info + footer);
@@ -215,7 +243,7 @@ app.post('/examiners', (req, res) => {
 app.get('/degree_projects', (req, res) => {
 	//TODO: cas/username to get director mail
 	var examiner_mail = 'test_exam3@kth.se';
-	
+
 	var degree_project = fs.readFileSync('views/degree_project.html');
 	var menu = main_menu.create_main_menu(req);
 	parse_data.degree_projects(examiner_mail, (info) => {
@@ -244,7 +272,7 @@ app.get('/profile', (req, res) => {
 	var examiner_mail = 'test_exam3@kth.se';
 	var profile = fs.readFileSync('views/profile.html');
 	var menu = main_menu.create_main_menu(req);
-	
+
 	parse_data.profile(examiner_mail, (info) => {
 		res.send(header + menu + profile + info + footer);
 	});
@@ -257,13 +285,13 @@ app.post('/update_area', (req, res) => {
 
 	var menu = main_menu.create_main_menu(req);
 	var updated = fs.readFileSync('views/success.html');
-	
+
 	console.log("Update area: " + req.body.area);
 	db.update_area(examiner_mail, req.body.area, (success) => {
 		if(success){
 			res.send(header + menu + updated + footer);
 		} else {
-			res.send('Error when updating area');		
+			res.send('Error when updating area');
 		}
 	});
 });
@@ -274,7 +302,7 @@ app.get('/specify_tutoring_hours', (req, res) => {
 	var director_mail = 'test_dir@kth.se';
 	var profile = fs.readFileSync('views/specify_tutoring_hours.html');
 	var menu = main_menu.create_main_menu(req);
-	
+
 	parse_data.specify_tutoring_hours(director_mail, (info) => {
 		res.send(header + menu + profile + info + footer);
 	});
@@ -285,7 +313,7 @@ app.post('/specify_tutoring_hours', (req, res) => {
 	//TODO: cas/username to get examiner mail
 	var director_mail = 'test_dir@kth.se';
 	var post_info = req.body;
-	
+
 	db.specify_tutoring_hours(req, res, director_mail, post_info);
 });
 

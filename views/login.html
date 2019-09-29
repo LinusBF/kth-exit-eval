@@ -1,0 +1,23 @@
+<div class="container">
+  <div id="content">
+    <h1>Login</h1>
+    <p>Please fill out the form below to login</p>
+    <form action="/login" method="POST">
+      Role:
+      <br />
+      <input type="radio" name="role" value="examiner"/> Examiner
+      <br />
+      <input type="radio" name="role" value="director"/> Director
+      <br />
+      Director KTH-username <input type="text" name="director_user_name"/>
+      <br />
+      Password <input type="password" name="pass"/>
+      <br />
+      <button type="submit">Login</button>
+    </form>
+    <form action="/login" method="POST">
+      <input type="hidden" name="role" value="student"/>
+      <button type="submit">Are you a student? Click here to skip this step</button>
+    </form>
+  </div><!-- content -->
+</div>
