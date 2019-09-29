@@ -101,7 +101,8 @@ app.post('/login', (req, res) => {
 	} else if (req.body.pass === process.env.MASTER_PASSWORD) {
 		req.session.user = {
 			role: req.body.role,
-			mail: req.body.director_user_name + "@kth.se"
+			dirMail: req.body.director_user_name + "@kth.se",
+			exMail: req.body.examiner_user_name + "@kth.se"
 		};
 		res.redirect('/');
 	} else {
@@ -145,8 +146,7 @@ app.get('/add_budget_year', (req, res) => {
 app.post('/add_budget_year', (req, res) => {
 	var budget_year = req.body;
 
-	//TODO: logged in user instead of this:
-	var director_mail = 'test_dir@kth.se';
+	var director_mail = req.session.user.dirMail;
 	db.add_budget_year(req, res, director_mail, budget_year);
 });
 
@@ -162,8 +162,7 @@ app.get('/add_degree_project', (req, res) => {
 app.post('/add_degree_project', (req, res) => {
 	var post_info = req.body;
 
-	//TODO: logged in user instead of this:
-	var examiner_mail = "test_exam3@kth.se";
+	var examiner_mail = req.session.user.exMail;
 
 	db.add_degree_project(req, res, examiner_mail, post_info);
 });
@@ -179,8 +178,7 @@ app.get('/add_examiner', (req, res) => {
 app.post('/add_examiner', (req, res) => {
 	var user_mail = req.body.mail + "@kth.se";
 
-	//TODO: logged in user, ldap
-	var director_mail = "test_dir@kth.se";
+	var director_mail = req.session.user.dirMail;
 	var user_fname = "Test";
 	var user_lname = "Add";
 
@@ -207,8 +205,7 @@ app.get('/available_examiners', (req, res) => {
 
 //Gets view, creates main menu, gets the budget years via parse_data and sends it back to the user.
 app.get('/budget_years', (req, res) => {
-	//TODO: cas/username to get director mail
-	var director_mail = 'test_dir@kth.se';
+	var director_mail = req.session.user.dirMail;
 
 	var budget_years = fs.readFileSync('views/budget_years.html');
 	var menu = main_menu.create_main_menu(req);
@@ -226,8 +223,7 @@ app.get('/examiners', (req, res) => {
 
 //Adds examiner to the database via postgres.js
 app.post('/examiners', (req, res) => {
-	//TODO: cas/username to get director mail
-	var director_mail = 'test_dir@kth.se';
+	var director_mail = req.session.user.dirMail;
 
 	var budget_year = req.body.budget_year;
 	var examiners = fs.readFileSync('views/examiners.html');
@@ -241,8 +237,7 @@ app.post('/examiners', (req, res) => {
 
 //Gets view, creates main menu, gets the degree projects via parse_data and sends it back to the user.
 app.get('/degree_projects', (req, res) => {
-	//TODO: cas/username to get director mail
-	var examiner_mail = 'test_exam3@kth.se';
+	var examiner_mail = req.session.user.exMail;
 
 	var degree_project = fs.readFileSync('views/degree_project.html');
 	var menu = main_menu.create_main_menu(req);
@@ -268,8 +263,7 @@ app.post('/mark_as_finished', (req, res) => {
 
 //Gets view, creates main menu, gets the profile via parse_data and sends it back to the user.
 app.get('/profile', (req, res) => {
-	//TODO: cas/username to get examiner mail
-	var examiner_mail = 'test_exam3@kth.se';
+	var examiner_mail = req.session.user.exMail;
 	var profile = fs.readFileSync('views/profile.html');
 	var menu = main_menu.create_main_menu(req);
 
@@ -280,8 +274,7 @@ app.get('/profile', (req, res) => {
 
 //Updates area in the database
 app.post('/update_area', (req, res) => {
-	//TODO: cas/username to get examiner mail
-	var examiner_mail = 'test_exam3@kth.se';
+	var examiner_mail = req.session.user.exMail;
 
 	var menu = main_menu.create_main_menu(req);
 	var updated = fs.readFileSync('views/success.html');
@@ -298,8 +291,7 @@ app.post('/update_area', (req, res) => {
 
 //Gets view, creates main menu, gets the specified tutoring hours for examiners via parse_data and sends it back to the user. 
 app.get('/specify_tutoring_hours', (req, res) => {
-	//TODO: cas/username to get examiner mail
-	var director_mail = 'test_dir@kth.se';
+	var director_mail = req.session.user.dirMail;
 	var profile = fs.readFileSync('views/specify_tutoring_hours.html');
 	var menu = main_menu.create_main_menu(req);
 
@@ -310,8 +302,7 @@ app.get('/specify_tutoring_hours', (req, res) => {
 
 //Updates the database with the specified tutoring hours to the specified examiner
 app.post('/specify_tutoring_hours', (req, res) => {
-	//TODO: cas/username to get examiner mail
-	var director_mail = 'test_dir@kth.se';
+	var director_mail = req.session.user.dirMail;
 	var post_info = req.body;
 
 	db.specify_tutoring_hours(req, res, director_mail, post_info);
